@@ -1,11 +1,12 @@
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { CLASS_DEFINITIONS } from '../../domain/data/classDefinitions';
-import { VISIBILITY_RADIUS } from '../../domain/config';
+import { VISIBILITY_RADIUS, MAX_LOG_ENTRIES, ENEMY_DROP_CHANCE, BOSS_DROP_CHANCE, POTION_HEAL_RATIO } from '../../domain/config';
 import { DungeonFloor, GroundItem } from '../../domain/entities/dungeon';
 import { EnemyEntity } from '../../domain/entities/enemy';
 import { Equipment, INVENTORY_CAPACITY, PlayerCharacter } from '../../domain/entities/character';
-import { RNG } from '../../infrastructure/random/rng';
+import { RNG } from '../../domain/services/rng';
+import { createRandomSeed } from '../../infrastructure/random/createSeed';
 import { canUseAbility, executeAbility } from '../../domain/services/abilityService';
 import { resolveAttack } from '../../domain/services/combatService';
 import { generateFloor } from '../../domain/services/dungeonGenerator';
@@ -37,7 +38,7 @@ function handleEnemyDeath(
 
   let groundItems = floor.groundItems;
   const luck = computeEffectiveStats(newPlayer.baseStats, newPlayer.equipment).luck;
-  const dropChance = enemy.isBoss ? 1 : 0.45;
+  const dropChance = enemy.isBoss ? BOSS_DROP_CHANCE : ENEMY_DROP_CHANCE;
   if (rng.chance(dropChance)) {
     const item = generateItem(floor.level, luck, rng);
     groundItems = [...groundItems, { id: nanoid(8), position: enemy.position, kind: 'item', item }];
@@ -161,7 +162,7 @@ function finalizeTurn(
     goldCollected,
     status,
     lastEssenceEarned,
-    log: [...prevLog, ...newLogs].slice(-80),
+    log: [...prevLog, ...newLogs].slice(-MAX_LOG_ENTRIES),
   };
 }
 
@@ -201,7 +202,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   startRun: (classType: ClassType) => {
     const metaBonuses = useMetaStore.getState().getBonusStats();
-    const rng = new RNG(RNG.createSeed());
+    const rng = new RNG(createRandomSeed());
     const startingLuck = CLASS_DEFINITIONS[classType].baseStats.luck + (metaBonuses.luck ?? 0);
     const floor = generateFloor(1, startingLuck, rng);
     const player = createPlayerCharacter(classType, metaBonuses, floor.playerStart);
@@ -295,7 +296,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         kills,
         bossKills,
         goldCollected,
-        log: [...prev.log, ...logs].slice(-80),
+        log: [...prev.log, ...logs].slice(-MAX_LOG_ENTRIES),
       }));
       return;
     }
@@ -323,7 +324,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const check = canUseAbility(effective, player.ability.cooldownRemaining, player.classType);
     if (!check.ok) {
       pushLog(check.reason ?? 'Способность недоступна', 'info');
-      set((prev) => ({ log: [...prev.log, ...logs].slice(-80) }));
+      set((prev) => ({ log: [...prev.log, ...logs].slice(-MAX_LOG_ENTRIES) }));
       return;
     }
 
@@ -374,7 +375,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const logs: LogEntry[] = [];
     const pushLog: PushLog = (text, kind = 'info') => logs.push({ id: nanoid(6), turn, text, kind });
 
-    const healAmount = Math.round(effective.maxHp * 0.4);
+    const healAmount = Math.round(effective.maxHp * POTION_HEAL_RATIO);
     let player: PlayerCharacter = {
       ...s.player,
       potions: s.player.potions - 1,
