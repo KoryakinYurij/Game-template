@@ -1,4 +1,4 @@
-import { RNG } from '../../infrastructure/random/rng';
+import { RNG } from './rng';
 import { CLASS_DEFINITIONS } from '../data/classDefinitions';
 import { EnemyEntity } from '../entities/enemy';
 import { ClassType, chebyshevDistance, Position, Stats } from '../types';

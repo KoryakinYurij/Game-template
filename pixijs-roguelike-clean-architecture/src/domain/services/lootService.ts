@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { RNG } from '../../infrastructure/random/rng';
+import { RNG } from './rng';
 import {
   AFFIX_BASE_VALUE,
   AffixKey,
