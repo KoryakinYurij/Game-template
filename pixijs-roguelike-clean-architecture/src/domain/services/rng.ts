@@ -1,8 +1,20 @@
 // ============================================================================
-// INFRASTRUCTURE LAYER — seeded pseudo-random number generator.
-// Pure technical utility, no game rules here.
+// DOMAIN LAYER — seeded pseudo-random number generator.
+//
+// Moved here from `infrastructure/random/rng.ts` to restore the dependency
+// rule of Clean Architecture: the domain must NOT import from infrastructure.
+//
+// This class is a pure, deterministic algorithm (mulberry32) with zero
+// external dependencies, so it belongs in the domain layer. The only impure
+// operation that used to live on it (Math.random() for seed creation) has been
+// extracted to infrastructure/random/createSeed.ts and wired in at the
+// composition root (the game store).
 // ============================================================================
 
+/**
+ * Deterministic, seedable PRNG (mulberry32).
+ * Same numeric sequence for the same seed → reproducible runs & tests.
+ */
 export class RNG {
   private state: number;
 
@@ -30,10 +42,12 @@ export class RNG {
     return this.next() < p;
   }
 
+  /** Uniformly picks one element. */
   pick<T>(arr: readonly T[]): T {
     return arr[this.int(0, arr.length - 1)];
   }
 
+  /** Picks an element according to its weight. */
   pickWeighted<T>(entries: Array<{ item: T; weight: number }>): T {
     const total = entries.reduce((sum, e) => sum + e.weight, 0);
     let roll = this.next() * total;
@@ -42,9 +56,5 @@ export class RNG {
       if (roll <= 0) return entry.item;
     }
     return entries[entries.length - 1].item;
-  }
-
-  static createSeed(): number {
-    return Math.floor(Math.random() * 2 ** 31);
   }
 }
