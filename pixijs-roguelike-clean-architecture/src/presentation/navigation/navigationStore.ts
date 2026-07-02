@@ -1,16 +1,13 @@
 // ============================================================================
-// PRESENTATION LAYER — navigation state.
+// PRESENTATION LAYER — navigation state (immer-backed).
 //
-// Holds ONLY the screen the user selected while the game is idle
-// ('menu' | 'class-select' | 'hub'). The 'playing' and 'game-over' screens are
-// intentionally NOT stored here: they are DERIVED from the game store's
-// lifecycle status (see presentation/hooks/useCurrentScreen.ts).
-//
-// This is what removes App.tsx's former dual source of truth — the old local
-// useState('menu') that had to be bridged to game status via a useEffect.
+// Holds ONLY the screen chosen while idle ('menu' | 'class-select' | 'hub').
+// 'playing' / 'game-over' are derived elsewhere (see useCurrentScreen.ts), so
+// this is not a second source of truth for them.
 // ============================================================================
 
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 export type IdleScreen = 'menu' | 'class-select' | 'hub';
 
@@ -21,9 +18,21 @@ interface NavigationState {
   goToHub: () => void;
 }
 
-export const useNavigationStore = create<NavigationState>((set) => ({
-  idleScreen: 'menu',
-  goToMenu: () => set({ idleScreen: 'menu' }),
-  goToClassSelect: () => set({ idleScreen: 'class-select' }),
-  goToHub: () => set({ idleScreen: 'hub' }),
-}));
+export const useNavigationStore = create<NavigationState>()(
+  immer((set) => ({
+    idleScreen: 'menu',
+    // Draft mutations: immer produces the immutable next state for us.
+    goToMenu: () =>
+      set((state) => {
+        state.idleScreen = 'menu';
+      }),
+    goToClassSelect: () =>
+      set((state) => {
+        state.idleScreen = 'class-select';
+      }),
+    goToHub: () =>
+      set((state) => {
+        state.idleScreen = 'hub';
+      }),
+  })),
+);

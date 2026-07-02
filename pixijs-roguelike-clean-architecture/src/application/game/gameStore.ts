@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 import { CLASS_DEFINITIONS } from '../../domain/data/classDefinitions';
 import { VISIBILITY_RADIUS, MAX_LOG_ENTRIES, ENEMY_DROP_CHANCE, BOSS_DROP_CHANCE, POTION_HEAL_RATIO } from '../../domain/config';
 import { DungeonFloor, GroundItem } from '../../domain/entities/dungeon';
@@ -188,7 +189,7 @@ interface GameState {
   returnToHub: () => void;
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
+export const useGameStore = create<GameState>()(immer((set, get) => ({
   status: 'idle',
   player: null,
   floor: null,
@@ -443,4 +444,4 @@ export const useGameStore = create<GameState>((set, get) => ({
   returnToHub: () => {
     set({ status: 'idle', player: null, floor: null, log: [] });
   },
-}));
+})));
