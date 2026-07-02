@@ -1,6 +1,6 @@
 import { xpToNextLevel, CLASS_DEFINITIONS } from '../../domain/data/classDefinitions';
 import { PlayerCharacter } from '../../domain/entities/character';
-import { ClassType, StatBonuses } from '../../domain/types';
+import { addStatBonuses, ClassType, StatBonuses } from '../../domain/types';
 
 export function createPlayerCharacter(
   classType: ClassType,
@@ -8,14 +8,8 @@ export function createPlayerCharacter(
   position: { x: number; y: number },
 ): PlayerCharacter {
   const def = CLASS_DEFINITIONS[classType];
-  const baseStats = { ...def.baseStats };
-  baseStats.maxHp += metaBonuses.maxHp ?? 0;
-  baseStats.maxMana += metaBonuses.maxMana ?? 0;
-  baseStats.attack += metaBonuses.attack ?? 0;
-  baseStats.defense += metaBonuses.defense ?? 0;
-  baseStats.critChance += metaBonuses.critChance ?? 0;
-  baseStats.critMultiplier += metaBonuses.critMultiplier ?? 0;
-  baseStats.luck += metaBonuses.luck ?? 0;
+  // #6: reuse the domain helper instead of re-listing every stat field by hand.
+  const baseStats = addStatBonuses(def.baseStats, [metaBonuses]);
   baseStats.hp = baseStats.maxHp;
   baseStats.mana = baseStats.maxMana;
 

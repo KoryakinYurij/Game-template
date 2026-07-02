@@ -38,9 +38,9 @@ export function PixiGameCanvas() {
       const tiles = new Graphics();
       const items = new Container();
       const enemies = new Container();
-      const player = new Container();
-      app.stage.addChild(tiles, items, enemies, player);
-      layersRef.current = { tiles, items, enemies, player };
+      const playerLayer = new Container();
+      app.stage.addChild(tiles, items, enemies, playerLayer);
+      layersRef.current = { tiles, items, enemies, player: playerLayer };
     })();
 
     return () => {

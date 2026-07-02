@@ -58,7 +58,7 @@ export interface Stats {
 }
 
 /** A partial set of stat deltas used by items, class growth and meta upgrades. */
-export type StatBonuses = Partial<Omit<Stats, 'hp' | 'mana'>>;
+export type StatBonuses = Partial<Stats>;
 
 export type LogKind = 'info' | 'combat' | 'loot' | 'danger' | 'success' | 'level';
 
@@ -81,16 +81,34 @@ export function samePosition(a: Position, b: Position): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
+/**
+ * Stat keys that bonuses may apply to (excludes current hp/mana).
+ * SINGLE SOURCE OF TRUTH — adding a new bonus-able stat means editing this one
+ * array instead of every place that hand-rolled the list.
+ */
+export const STAT_BONUS_KEYS: (keyof StatBonuses)[] = [
+  'maxHp',
+  'maxMana',
+  'attack',
+  'defense',
+  'critChance',
+  'critMultiplier',
+  'luck',
+];
+
+/**
+ * Adds a list of partial stat bonuses onto a base Stats object.
+ * Behaviour-preserving vs the old hand-rolled version: a bonus field is applied
+ * only when its value is truthy (undefined / 0 are no-ops), and current hp/mana
+ * are intentionally never modified by bonuses.
+ */
 export function addStatBonuses(base: Stats, bonuses: StatBonuses[]): Stats {
   const result: Stats = { ...base };
   for (const bonus of bonuses) {
-    if (bonus.maxHp) result.maxHp += bonus.maxHp;
-    if (bonus.maxMana) result.maxMana += bonus.maxMana;
-    if (bonus.attack) result.attack += bonus.attack;
-    if (bonus.defense) result.defense += bonus.defense;
-    if (bonus.critChance) result.critChance += bonus.critChance;
-    if (bonus.critMultiplier) result.critMultiplier += bonus.critMultiplier;
-    if (bonus.luck) result.luck += bonus.luck;
+    for (const key of STAT_BONUS_KEYS) {
+      const value = bonus[key];
+      if (value) result[key] += value;
+    }
   }
   return result;
 }
