@@ -331,7 +331,7 @@ export const useGameStore = create<GameState>()(immer((set, get) => ({
 
     const outcome = executeAbility(player.classType, effective, player.position, floor.enemies, rng);
     pushLog(outcome.message, 'combat');
-    let baseStats = spendMana(player.baseStats, player.equipment, outcome.manaCost);
+    const baseStats = spendMana(player.baseStats, player.equipment, outcome.manaCost);
     player = { ...player, baseStats };
 
     let enemies = floor.enemies;

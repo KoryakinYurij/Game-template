@@ -49,7 +49,6 @@ export function PixiGameCanvas() {
       app.destroy(true, { children: true });
       appRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -75,10 +74,18 @@ export function PixiGameCanvas() {
           g.rect(px, py, TILE_SIZE, TILE_SIZE).fill({ color: COLORS.fog });
           continue;
         }
-        let color = COLORS.floorExplored;
-        if (tile.type === TileType.WALL) color = tile.visible ? COLORS.wallVisible : COLORS.wallExplored;
-        else if (tile.type === TileType.STAIRS) color = tile.visible ? COLORS.stairsVisible : COLORS.stairsExplored;
-        else color = tile.visible ? COLORS.floorVisible : COLORS.floorExplored;
+        const color =
+          tile.type === TileType.WALL
+            ? tile.visible
+              ? COLORS.wallVisible
+              : COLORS.wallExplored
+            : tile.type === TileType.STAIRS
+              ? tile.visible
+                ? COLORS.stairsVisible
+                : COLORS.stairsExplored
+              : tile.visible
+                ? COLORS.floorVisible
+                : COLORS.floorExplored;
 
         g.rect(px, py, TILE_SIZE, TILE_SIZE).fill({ color });
         g.rect(px, py, TILE_SIZE, TILE_SIZE).stroke({ width: 1, color: COLORS.gridLine, alpha: 0.4 });
@@ -97,16 +104,8 @@ export function PixiGameCanvas() {
     for (const gi of floor.groundItems) {
       const tile = floor.tiles[gi.position.y][gi.position.x];
       if (!tile.explored) continue;
-      let icon = '❔';
-      let color = 0xffffff;
-      if (gi.kind === 'gold') {
-        icon = '💰';
-      } else if (gi.kind === 'potion') {
-        icon = '🧪';
-      } else {
-        icon = gi.item.icon;
-        color = RARITY_COLOR[gi.item.rarity];
-      }
+      const icon = gi.kind === 'gold' ? '💰' : gi.kind === 'potion' ? '🧪' : gi.item.icon;
+      const color = gi.kind === 'gold' || gi.kind === 'potion' ? 0xffffff : RARITY_COLOR[gi.item.rarity];
       const style = new TextStyle({ fontSize: TILE_SIZE * 0.6, fill: color });
       const text = new Text({ text: icon, style });
       text.anchor.set(0.5);
