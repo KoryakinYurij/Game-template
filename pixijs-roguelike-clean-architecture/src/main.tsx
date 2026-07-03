@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import { LocalStorageMetaRepository } from './infrastructure/persistence/localStorageMetaRepository';
 import { initMetaStore } from './application/meta/metaStore';
+import { createRandomSeed } from './infrastructure/random/createSeed';
 
 // ============================================================================
 // COMPOSITION ROOT (a.k.a. wiring / bootstrap).
@@ -23,6 +24,6 @@ initMetaStore(metaRepository);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <App seedFactory={createRandomSeed} />
   </StrictMode>,
 );

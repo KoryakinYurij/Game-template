@@ -1,6 +1,6 @@
 import { StatBonuses } from '../../../domain/types';
 
-const LABELS: Record<keyof StatBonuses, string> = {
+const LABELS: Record<string, string> = {
   maxHp: 'Здоровье',
   maxMana: 'Мана',
   attack: 'Атака',

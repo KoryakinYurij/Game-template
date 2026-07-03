@@ -46,8 +46,8 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['**/presentation/**'],
-              message: 'Application layer must not import from presentation (dependencies point inward).',
+              group: ['**/presentation/**', '**/infrastructure/**'],
+              message: 'Application layer must not import from presentation or infrastructure (dependencies point inward).',
             },
           ],
         },
@@ -64,7 +64,7 @@ export default tseslint.config(
           patterns: [
             {
               group: ['**/infrastructure/**'],
-              message: 'Presentation must not import infrastructure directly; go through application/domain.',
+              message: 'Presentation must not import infrastructure directly; inject via App props from main.',
             },
           ],
         },

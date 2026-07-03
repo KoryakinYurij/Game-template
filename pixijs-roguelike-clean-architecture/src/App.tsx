@@ -7,7 +7,7 @@ import { HubScreen } from './presentation/components/screens/HubScreen';
 import { PlayScreen } from './presentation/components/screens/PlayScreen';
 import { GameOverScreen } from './presentation/components/screens/GameOverScreen';
 
-export default function App() {
+export default function App({ seedFactory }: { seedFactory: () => number }) {
   // Single source of truth: the screen is DERIVED from game status + the
   // user's idle selection. No more local useState / useEffect bridge.
   const screen = useCurrentScreen();
@@ -15,16 +15,19 @@ export default function App() {
   const goToClassSelect = useNavigationStore((s) => s.goToClassSelect);
   const goToHub = useNavigationStore((s) => s.goToHub);
   const returnToHub = useGameStore((s) => s.returnToHub);
+  const startRun = useGameStore((s) => s.startRun);
 
   return (
     <div className="min-h-screen w-full bg-slate-950 text-slate-100">
       {screen === 'menu' && <MainMenuScreen onPlay={goToClassSelect} onHub={goToHub} />}
 
       {screen === 'class-select' && (
-        // ClassSelectScreen.handleStart() already calls startRun(), which flips
-        // status to 'playing' — useCurrentScreen then resolves to the 'playing'
-        // screen automatically, so onStart is a deliberate no-op here.
-        <ClassSelectScreen onBack={goToMenu} onStart={() => {}} />
+        <ClassSelectScreen
+          onBack={goToMenu}
+          onStart={(classType) => {
+            startRun(classType, seedFactory());
+          }}
+        />
       )}
 
       {screen === 'hub' && <HubScreen onBack={goToMenu} />}
