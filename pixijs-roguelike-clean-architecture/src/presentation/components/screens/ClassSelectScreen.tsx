@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useGameStore } from '../../../application/game/gameStore';
 import { useMetaStore } from '../../../application/meta/metaStore';
 import { CLASS_DEFINITIONS } from '../../../domain/data/classDefinitions';
 import { ClassType } from '../../../domain/types';
@@ -8,18 +7,16 @@ import { Button } from '../common/Button';
 import { Panel } from '../common/Panel';
 import { cn } from '../../../utils/cn';
 
-export function ClassSelectScreen({ onBack, onStart }: { onBack: () => void; onStart: () => void }) {
+export function ClassSelectScreen({ onBack, onStart }: { onBack: () => void; onStart: (classType: ClassType) => void }) {
   const unlockedClasses = useMetaStore((s) => s.unlockedClasses);
   const upgrades = useMetaStore((s) => s.upgrades);
-  const startRun = useGameStore((s) => s.startRun);
   const [selected, setSelected] = useState<ClassType>(ClassType.WARRIOR);
 
   const bonuses = computeMetaBonusStats(upgrades);
   const classList = Object.values(CLASS_DEFINITIONS);
 
   function handleStart() {
-    startRun(selected);
-    onStart();
+    onStart(selected);
   }
 
   return (
