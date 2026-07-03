@@ -85,15 +85,17 @@ function runEnemyPhase(
   const updatedEnemies: EnemyEntity[] = [];
 
   for (const original of floor.enemies) {
-    const enemy = { ...original, position: { ...original.position } };
-    const dist = chebyshevDistance(enemy.position, currentPlayer.position);
+    const dist = chebyshevDistance(original.position, currentPlayer.position);
 
     if (dist <= 1) {
+      const enemy = { ...original, position: { ...original.position } };
       const effective = computeEffectiveStats(currentPlayer.baseStats, currentPlayer.equipment);
       const result = resolveAttack(enemy.stats, effective, rng);
       currentPlayer = { ...currentPlayer, baseStats: applyDamage(currentPlayer.baseStats, currentPlayer.equipment, result.damage) };
       pushLog(`${enemy.icon} ${enemy.name} бьёт вас на ${result.damage}${result.isCrit ? ' (КРИТ!)' : ''}`, 'danger');
-    } else if (dist <= enemy.aggroRadius) {
+      updatedEnemies.push(enemy);
+    } else if (dist <= original.aggroRadius) {
+      const enemy = { ...original, position: { ...original.position } };
       const dx = Math.sign(currentPlayer.position.x - enemy.position.x);
       const dy = Math.sign(currentPlayer.position.y - enemy.position.y);
       const candidates: Position[] = [];
@@ -113,8 +115,10 @@ function runEnemyPhase(
         break;
       }
       occupied.add(`${enemy.position.x},${enemy.position.y}`);
+      updatedEnemies.push(enemy);
+    } else {
+      updatedEnemies.push(original);
     }
-    updatedEnemies.push(enemy);
   }
 
   return { player: currentPlayer, floor: { ...floor, enemies: updatedEnemies } };
